@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     <div class="container-sm">
-            <h1>Login</h1>
+        <h1>Login</h1>
         {% from "_formhelpers.html" import render_field %}
         <form class="form-login" method='post' action="{{ url_for('login') }}">
             {{ form.hidden_tag() }}
@@ -15,6 +15,13 @@
                 {{ render_field(form.remember, class="form-check-label") }}
             </dl>
             <button type="submit" class="btn btn-primary container-sm">Login</button>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <p style="text-align: center; color: red;">{{ msg }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </form>
     </div>
 {% endblock %}

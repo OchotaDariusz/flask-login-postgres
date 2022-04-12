@@ -4,6 +4,13 @@
     {{ super() }}
 {% endblock %}
 {% block content %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p style="text-align: center; color: red;">{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <h1>Dashboard</h1>
     <p class="important">
         Welcome to my awesome homepage.
