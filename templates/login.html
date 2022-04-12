@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <div class="container-sm">
+            <h1>Login</h1>
+        {% from "_formhelpers.html" import render_field %}
+        <form class="form-login" method='post' action="{{ url_for('login') }}">
+            {{ form.hidden_tag() }}
+            <dl>
+                {{ render_field(form.username, class="form-control") }}
+                {{ render_field(form.password, class="form-control") }}
+                {{ render_field(form.remember, class="form-check-label") }}
+            </dl>
+            <button type="submit" class="btn btn-primary container-sm">Login</button>
+        </form>
+    </div>
+{% endblock %}
+{% block footer %}
+    {{ super() }}
+{% endblock %}

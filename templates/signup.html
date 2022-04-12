@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}Sign Up{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <div class="container-sm">
+        <h1>Sign Up</h1>
+        {% from "_formhelpers.html" import render_field %}
+        <form class="form-signup" method='post' action="{{ url_for('signup') }}">
+            {{ form.hidden_tag() }}
+            <dl>
+                {{ render_field(form.username, class="form-control") }}
+                {{ render_field(form.email, class="form-control") }}
+                {{ render_field(form.password, class="form-control") }}
+                {{ render_field(form.confirm, class="form-control") }}
+                {{ render_field(form.accept_tos, class="form-check-label") }}
+            </dl>
+            <button type="submit" class="btn btn-primary container-sm">Sign Up</button>
+        </form>
+    </div>
+{% endblock %}
+{% block footer %}
+    {{ super() }}
+{% endblock %}
