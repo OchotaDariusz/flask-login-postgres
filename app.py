@@ -29,8 +29,10 @@ from flask_login import (
     logout_user,
     current_user
 )
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
+# app config
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123Password!@localhost/flasksql'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -42,11 +44,12 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
+# database model
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(16), unique=True, nullable=False)
     email = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
+    password = db.Column(db.String(88), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow())
 
     def __init__(self, username, email, password):
@@ -60,17 +63,19 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+# class for login form
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=5, max=16)])
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=88)])
     remember = BooleanField('Remember me')
 
 
+# class for signup form
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=5, max=16)])
     email = StringField('Email address',
                         validators=[InputRequired(), Length(max=50), Email(message='Invalid email address')])
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80), DataRequired(),
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=88), DataRequired(),
                                                      EqualTo('confirm', message='Passwords must be the same')])
     confirm = PasswordField('Repeat password',
                             validators=[InputRequired(), EqualTo('password', message='Passwords must be the same')])
@@ -88,16 +93,32 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
     if request.method == 'POST' and form.validate_on_submit():
-        return f'<h1>{form.username.data} {form.password.data}</h1>'
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            if user.password == form.password.data:
+                # flash('Logged in!')
+                return redirect(url_for('dashboard'))
+
+        flash('Invalid username or password!')
+
     return render_template('login.html', form=form)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = RegistrationForm()
+
     if request.method == 'POST' and form.validate_on_submit():
-        return f'<h1>{form.username.data} {form.email.data} {form.password.data}</h1>'
+        hashed_password = generate_password_hash(form.password.data, method='sha256')
+        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Thank you for registering! You can now log in!')
+        return redirect(url_for('login'))
+
     return render_template('signup.html', form=form)
 
 
