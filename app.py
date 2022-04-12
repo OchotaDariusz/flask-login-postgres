@@ -98,7 +98,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
-                # flash('Logged in!')
+                login_user(user, remember=form.remember.data)
                 return redirect(url_for('dashboard'))
 
         flash('Invalid username or password!')
@@ -123,8 +123,9 @@ def signup():
 
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', user=current_user.username)
 
 
 if __name__ == '__main__':
