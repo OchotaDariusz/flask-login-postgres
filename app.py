@@ -97,7 +97,7 @@ def login():
     if request.method == 'POST' and form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user:
-            if user.password == form.password.data:
+            if check_password_hash(user.password, form.password.data):
                 # flash('Logged in!')
                 return redirect(url_for('dashboard'))
 
