@@ -1,3 +1,5 @@
+import os
+
 from flask import (
     Flask,
     redirect,
@@ -29,14 +31,19 @@ from flask_login import (
     logout_user,
     current_user
 )
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+from dotenv import load_dotenv
 from datetime import datetime
 
 # app config
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123Password!@localhost/flasksql'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = '67eb24a85f65415033258e7f13d2a81bf67542a2ac608768'
+load_dotenv()
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS')
+app.secret_key = os.getenv('SECRET_KEY')
 db = SQLAlchemy(app)
 # api = Api(app)
 login_manager = LoginManager()
