@@ -89,50 +89,60 @@ class RegistrationForm(FlaskForm):
     accept_tos = BooleanField('I accept the TOS', validators=[DataRequired()])
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        return "You've send POST request"
-    else:
-        return "<h1>You've send GET request</h1>"
+    return redirect('/login')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    else:
+        form = LoginForm()
 
-    if request.method == 'POST' and form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user:
-            if check_password_hash(user.password, form.password.data):
-                login_user(user, remember=form.remember.data)
-                return redirect(url_for('dashboard'))
+        if request.method == 'POST' and form.validate_on_submit():
+            user = User.query.filter_by(username=form.username.data).first()
+            if user:
+                if check_password_hash(user.password, form.password.data):
+                    login_user(user, remember=form.remember.data)
+                    return redirect(url_for('dashboard'))
 
-        flash('Invalid username or password!')
+            flash('Invalid username or password!')
 
-    return render_template('login.html', form=form)
+        return render_template('login.html', form=form)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    form = RegistrationForm()
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    else:
+        form = RegistrationForm()
 
-    if request.method == 'POST' and form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data, method='sha256')
-        new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
+        if request.method == 'POST' and form.validate_on_submit():
+            hashed_password = generate_password_hash(form.password.data, method='sha256')
+            new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
 
-        flash('Thank you for registering! You can now log in!')
-        return redirect(url_for('login'))
+            flash('Thank you for registering! You can now log in!')
+            return redirect(url_for('login'))
 
-    return render_template('signup.html', form=form)
+        return render_template('signup.html', form=form)
 
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('dashboard.html', user=current_user.username)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
